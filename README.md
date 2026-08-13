@@ -1,36 +1,45 @@
 
-# WhatsApp Grafana Audit Organizer
+# WhatsApp Grafana Audit Organizer v0.3
 
-A Streamlit tool for converting WhatsApp group exports containing Grafana screenshots into a date-organized audit archive.
+This Streamlit application extracts only WhatsApp-linked screenshots that
+visually resemble the configured Grafana CPU/Memory dashboard and organizes
+2026 evidence by WhatsApp message date.
 
-## Features
+## Files required in the GitHub repository
 
-- Upload WhatsApp exported ZIP
-- Parse common WhatsApp chat timestamp formats
-- Match media files referenced in chat messages
-- Sort evidence into Year / Month / Date folders
-- Basic CPU / Memory / Disk / Network classification from filename or message text
-- Generate `audit_index.csv`
-- Generate `daily_coverage.csv`
-- SHA256 hash every image for integrity verification
-- Preserve unmatched media under `_Unmatched_Media`
+- `app.py`
+- `requirements.txt`
+- `grafana_reference.png`
 
-## Run locally
+## Output
 
-```bash
-pip install -r requirements.txt
-streamlit run app.py
+```text
+Grafana_Audit_2026/
+├── 2026/
+│   ├── 2026-01-01/
+│   ├── 2026-01-02/
+│   └── ...
+├── audit_index_2026.csv
+├── daily_coverage_2026.csv
+├── rejected_media_2026.csv
+└── README.txt
 ```
 
-## Run on Streamlit Community Cloud
+## Detection method
 
-1. Create a GitHub repository.
-2. Upload `app.py` and `requirements.txt`.
-3. In Streamlit Community Cloud, create an app from the repository.
-4. Set the main file to `app.py`.
+The app compares each WhatsApp-linked image against `grafana_reference.png`
+using lightweight image-layout similarity, aspect ratio, and dark-theme
+characteristics. The similarity threshold can be adjusted from the sidebar.
 
-## Important limitation in v0.1
+This intentionally avoids OCR so the application stays lightweight for
+Streamlit Community Cloud.
 
-WhatsApp export formats differ between Android/iPhone, locale, and app version. This version handles common exported-text formats. Once a real sample export is available, the parser can be tuned to your organization's exact format.
+## Streamlit Community Cloud
 
-For audit use, validate the generated index against a sample of the original export before relying on it as authoritative evidence.
+Upload all three required files to the root of your GitHub repository and
+redeploy the app. `requirements.txt` adds Pillow and NumPy for image matching.
+
+## Audit caution
+
+The image classifier is heuristic. Review the accepted and rejected tables
+against a sample of original evidence before treating the archive as final.
