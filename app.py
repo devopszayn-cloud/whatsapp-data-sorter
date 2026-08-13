@@ -138,12 +138,29 @@ def file_hash(path):
     return h.hexdigest()
 
 def best_media_match(media_name, images):
+    # Pandas may represent missing media filenames as NaN/NA rather than None.
+    # Only real, non-empty strings should ever be passed to pathlib.Path.
+    if media_name is None:
+        return None
+
+    try:
+        if pd.isna(media_name):
+            return None
+    except (TypeError, ValueError):
+        pass
+
+    if not isinstance(media_name, str):
+        return None
+
+    media_name = media_name.strip()
     if not media_name:
         return None
+
     target = Path(media_name).name.lower()
     exact = [p for p in images if p.name.lower() == target]
     if exact:
         return exact[0]
+
     # Relax spaces/underscores
     norm = re.sub(r'[\s_]+', '', target)
     for p in images:
@@ -163,7 +180,7 @@ def build_archive(df, images, out_root):
         for _, row in df.iterrows():
             media = row.get("media_name")
             matched = best_media_match(media, images)
-            if not matched:
+            if matched is None:
                 continue
 
             used.add(str(matched.resolve()))
